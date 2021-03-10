@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -16,6 +17,9 @@ import java.sql.*;
 
 
 public class Bank {
+
+    private static final String USER = "basic_user";
+    private  static final String PASSWORD = "=E8gC>BG]%aW@wp4";
     private static final Stage stage = new Stage();
 
     public Bank(){
@@ -32,7 +36,7 @@ public class Bank {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/bank", "devuser", "hy02"
+                    "jdbc:mysql://localhost:3306/bank", USER, PASSWORD
             );
 
             Statement statement = con.createStatement();
@@ -58,20 +62,26 @@ public class Bank {
         pane.setHgap(5);
         pane.setVgap(5);
 
+        // Field for error messages
+        Text errorMessage = new Text("");
+        pane.add(errorMessage, 1, 4);
+
+        // Clear error message if you click anywhere on the screen
+        pane.setOnMouseClicked(mouseEvent -> {
+            errorMessage.setText("");
+        });
+
+        // Username field
         pane.add(new Label("Username: "), 0, 0);
         TextField tfUsername = new TextField();
         pane.add(tfUsername, 1, 0);
 
-
+        // Password field
         pane.add(new Label("Password: "), 0, 1);
         PasswordField tfPassword = new PasswordField();
         pane.add(tfPassword, 1, 1);
 
-        // field for error messages
-        Text errorMessage = new Text("");
-        pane.add(errorMessage, 1, 4);
-
-        // login button
+        // Login button
         Button btLogin = new Button("Login");
         btLogin.setOnAction(actionEvent -> {
 
@@ -95,6 +105,12 @@ public class Bank {
         });
         pane.add(btLogin, 0, 5);
 
+        // If the user user press enter, activate the login process
+        tfPassword.setOnKeyPressed(keyEvent -> {
+            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
+                btLogin.fire();
+            }
+        });
 
         // Forgot password button
         Button btForgotPsd = new Button("Forgot password");
@@ -116,8 +132,6 @@ public class Bank {
 
 
     }
-
-
 
     /**
      * Sign up Menu
@@ -180,7 +194,7 @@ public class Bank {
         try{
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/bank", "devuser", "hy02"
+                    "jdbc:mysql://localhost:3306/bank", USER, PASSWORD
             );
             Statement statement = con.createStatement();
             ResultSet rs = statement.executeQuery("select username, password from account where username = '" + username + "' AND password ='" + password + "';");
@@ -208,37 +222,37 @@ public class Bank {
         pane.setVgap(5);
         pane.setHgap(5);
 
-        // get balance
+        // Get balance
         Button btBalance = new Button("Check your balance");
         btBalance.setOnAction(actionEvent -> showBalanceMenu( username,  password));
         pane.add(btBalance, 0, 0);
 
-        // withdraw money
+        // Withdraw money
         Button btWithdraw = new Button("Withdraw");
         btWithdraw.setOnAction(actionEvent -> showWithdrawMenu(username, password));
         pane.add(btWithdraw, 0, 1);
 
-        // add balance
+        // Add balance
         Button btAddBalance = new Button("Add balance");
         btAddBalance.setOnAction(actionEvent -> showAddMenuPane( username, password));
         pane.add(btAddBalance, 0, 2);
 
-        // change password
+        // Change password
         Button btChangePass = new Button("Change password");
         btChangePass.setOnAction(actionEvent -> showChangePasswordMenu( username,  password));
         pane.add(btChangePass, 0, 3);
 
-        // get security code
+        // Get security code
         Button btSecurityCode = new Button("Security Code");
         btSecurityCode.setOnAction(actionEvent -> showSecurityCodeMenu( username,  password));
         pane.add(btSecurityCode, 0, 4);
 
-        // transfer balance
+        // Transfer balance
         Button btTransfer = new Button("Transfer money");
         btTransfer.setOnAction(actionEvent -> showTransferMenu( username,  password));
         pane.add(btTransfer, 0, 5);
 
-        // log out from account
+        // Log out from account
         Button btLogOut = new Button("Log Out");
         btLogOut.setOnAction(actionEvent -> showMainMenu());
         pane.add(btLogOut, 0, 6);
@@ -259,7 +273,7 @@ public class Bank {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/bank", "devuser", "hy02");
+                    "jdbc:mysql://localhost:3306/bank", USER, PASSWORD);
             Statement statement = con.createStatement();
             ResultSet rs = statement.executeQuery("select balance from account where username = '" + username + "' AND password = '" + password + "';");
             Text balance = new Text();
@@ -305,7 +319,7 @@ public class Bank {
 
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 Connection con = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/bank", "devuser", "hy02");
+                        "jdbc:mysql://localhost:3306/bank", USER, PASSWORD);
                 Statement statement = con.createStatement();
                 int index = statement.executeUpdate("update account set balance = balance + " + addedBalance +
                         "where username = '" + username + "' and password = '" + password + "';");
@@ -342,12 +356,18 @@ public class Bank {
         pane.setHgap(5);
         pane.setVgap(5);
 
+        // Text field for inserting the balance
         pane.add(new Label("Enter how much you want to withdraw: "), 0, 0);
         TextField tfWithdraw = new TextField();
         pane.add(tfWithdraw, 0, 1);
 
+        // Field for showing errors
         Text errorMessage = new Text("");
         pane.add(errorMessage, 0, 3 );
+        pane.setOnMouseClicked(mouseEvent -> {
+            errorMessage.setText("");
+        });
+
 
         Button btWithdraw = new Button("Withdraw");
         btWithdraw.setOnAction(actionEvent -> {
@@ -355,7 +375,7 @@ public class Bank {
                 double withdrawn = Math.abs(Double.parseDouble(tfWithdraw.getText()));
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 Connection con = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/bank", "devuser","hy02"
+                        "jdbc:mysql://localhost:3306/bank", USER,PASSWORD
                 );
                 Statement statement = con.createStatement();
                 ResultSet rs = statement.executeQuery("select balance from account where username = '" + username +"' and password = '" +
@@ -417,6 +437,10 @@ public class Bank {
         // fields for info, error messages
         Text message = new Text();
         Text passwordMsg = new Text();
+        pane.setOnMouseClicked(mouseEvent -> {
+            message.setText("");
+            passwordMsg.setText("");
+        });
         pane.add(message, 0, 6);
         pane.add(passwordMsg, 0, 5);
 
@@ -434,16 +458,18 @@ public class Bank {
                try{
                   Class.forName("com.mysql.cj.jdbc.Driver");
                   Connection con = DriverManager.getConnection(
-                          "jdbc:mysql://localhost:3306/bank", "devuser", "hy02"
+                          "jdbc:mysql://localhost:3306/bank", USER, PASSWORD
                   );
                   Statement statement = con.createStatement();
                   int index = statement.executeUpdate("update account set password = '" + password + "' where username = '" + username +
                           "' and password = '" + passwordOld + "';");
+                   message.setText("Password changed!");
                }
                catch (Exception e){
                    message.setText("Unexpected error. Please try again.");
                }
             }
+
         });
         pane.add(btResetPassword, 0, 7);
 
@@ -473,7 +499,7 @@ public class Bank {
 
            Class.forName("com.mysql.cj.jdbc.Driver");
            Connection con = DriverManager.getConnection(
-                   "jdbc:mysql://localhost:3306/bank", "devuser", "hy02");
+                   "jdbc:mysql://localhost:3306/bank", USER, PASSWORD);
            Statement statement = con.createStatement();
            ResultSet rs = statement.executeQuery("select security_code from account where username = '" + username +
                    "' and password = '" + password +"';");
@@ -496,7 +522,6 @@ public class Bank {
      * Change password using username and security code linked to this account
      * If the current password is unknown
      */
-
     private static void showForgotPasswordMenu() {
         // Pane settings, padding, fields alignment
         GridPane pane = new GridPane();
@@ -535,85 +560,72 @@ public class Bank {
          * Check if password matches
          * Renew password
          */
-        btReset.setOnAction(actionEvent -> {
-           // Clear previous messages
-            message.setText("");
-           // Connect to the database
-            try {
-                // Get the username from the text
-                String username = tfUsername.getText();
-
-                // Check if one or more fields are empty
-                if(username.isEmpty() || pfPassword.getText().isEmpty() || pfPassword1.getText().isEmpty() ||
-                    tfSecurityCode.getText().isEmpty()) throw new InputEmptyException();
-
+        btReset.setOnAction(new EventHandler<ActionEvent>() {
+            private void clearFields(){
+                tfUsername.clear();
+                pfPassword.clear();
+                pfPassword1.clear();
+                tfSecurityCode.clear();
+            }
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                // Clear previous messages
+                message.setText("");
                 // Connect to the database
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                Connection con = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/bank", "devuser", "hy02");
-                Statement statement = con.createStatement();
+                try {
+                    // Get the username from the text
+                    String username = tfUsername.getText();
 
-                // Get the security code which belongs to the account
-                ResultSet rs = statement.executeQuery("select security_code from account where username = '" + username +"';");
-                String security_code = "";
-                if(rs.next()){
-                    security_code = rs.getString(1);
+                    // Check if one or more fields are empty
+                    if (username.isEmpty() || pfPassword.getText().isEmpty() || pfPassword1.getText().isEmpty() ||
+                            tfSecurityCode.getText().isEmpty()) throw new InputEmptyException();
+
+                    // Connect to the database
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    Connection con = DriverManager.getConnection(
+                            "jdbc:mysql://localhost:3306/bank", USER, PASSWORD);
+                    Statement statement = con.createStatement();
+
+                    // Get the security code which belongs to the account
+                    ResultSet rs = statement.executeQuery("select security_code from account where username = '" + username + "';");
+                    String security_code;
+                    if (rs.next()) {
+                        security_code = rs.getString(1);
+                    } else throw new MissingUsernameException();
+
+                    // If the passwords are not equal, throw exception
+                    if (!pfPassword.getText().equals(pfPassword1.getText())) throw new PasswordMatchException();
+                    // Check if the security code entered by the user is the same as the one in the database
+                    if (!security_code.equals(tfSecurityCode.getText())) throw new InvalidSecurityCodeException();
+
+                    // Execute the query to change password
+                    int changePassRs = statement.executeUpdate("update account set password = '" + pfPassword.getText() +
+                            "' where username = '" + username + "' and security_code= '" + security_code + "';");
+
+                    // Show a message that confirms if the password what changed with no errors
+                    message.setText("Password changed!");
+
+                    //Clear the fields
+                    clearFields();
+                } catch (InputEmptyException e) {
+                    message.setText("One or more fields are empty");
+                    clearFields();
+                    tfSecurityCode.clear();
+                } catch (MissingUsernameException e) {
+                    message.setText("This username does not exist");
+                    clearFields();
+                } catch (PasswordMatchException e) {
+                    message.setText("Passwords are not the same");
+                    clearFields();
+
+                } catch (InvalidSecurityCodeException e) {
+                    message.setText("Invalid security code");
+                    clearFields();
+                } catch (Exception e) {
+                    System.out.println(e);
+                    message.setText("Unexpected error");
+                    clearFields();
                 }
-                else throw new MissingUsernameException();
-
-                // If the passwords are not equal, throw exception
-                if(!pfPassword.getText().equals(pfPassword1.getText())) throw new PasswordMatchException();
-                // Check if the security code entered by the user is the same as the one in the database
-                if(!security_code.equals(tfSecurityCode.getText())) throw new InvalidSecurityCodeException();
-
-                // Execute the query to change password
-                int changePassRs = statement.executeUpdate("update account set password = '" + pfPassword.getText() +
-                        "' where username = '" + username + "' and security_code= '" + security_code + "';");
-
-                // Show a message that confirms if the password what changed with no errors
-                message.setText("Password changed!");
-
-                //Clear the fields
-                tfUsername.clear();
-                pfPassword.clear();
-                pfPassword1.clear();
-                tfSecurityCode.clear();
-            }catch (InputEmptyException e){
-                message.setText("One or more fields are empty");
-                tfUsername.clear();
-                pfPassword.clear();
-                pfPassword1.clear();
-                tfSecurityCode.clear();
-            }
-            catch (MissingUsernameException e){
-                message.setText("This username does not exist");
-                tfUsername.clear();
-                pfPassword.clear();
-                pfPassword1.clear();
-                tfSecurityCode.clear();
-            }
-            catch (PasswordMatchException e){
-                message.setText("Passwords are not the same");
-                tfUsername.clear();
-                pfPassword.clear();
-                pfPassword1.clear();
-                tfSecurityCode.clear();
-
-            }
-            catch (InvalidSecurityCodeException e) {
-                message.setText("Invalid security code");
-                tfUsername.clear();
-                pfPassword.clear();
-                pfPassword1.clear();
-                tfSecurityCode.clear();
-            }
-            catch (Exception e) {
-                System.out.println(e);
-                message.setText("Unexpected error");
-                tfUsername.clear();
-                pfPassword.clear();
-                pfPassword1.clear();
-                tfSecurityCode.clear();
             }
         });
         // Add the reset button in the window
@@ -668,7 +680,7 @@ public class Bank {
 
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 Connection con = DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/bank", "devuser", "hy02"
+                        "jdbc:mysql://localhost:3306/bank", USER, PASSWORD
                 );
 
                 Statement statement = con.createStatement();
@@ -712,32 +724,34 @@ public class Bank {
      * Stage properties, such as block resize and set the title
      */
     public static void setStageProperty() {
+        stage.setWidth(600);
+        stage.setHeight(400);
         stage.setResizable(false);
         stage.setTitle("Bank Account");
     }
 }
 
-//////////////////
-// Exceptions/////
-//////////////////
-class InputEmptyException extends java.lang.Exception{
-    public InputEmptyException(){
+    //////////////////
+    // Exceptions/////
+    //////////////////
+    class InputEmptyException extends java.lang.Exception{
+        public InputEmptyException(){
         super("One or more fields are empty");
     }
 
-}
-class MissingUsernameException extends java.lang.Exception{
-    public MissingUsernameException(){
+    }
+    class MissingUsernameException extends java.lang.Exception{
+        public MissingUsernameException(){
         super("This username does not exist");
     }
-}
-class PasswordMatchException extends java.lang.Exception{ public PasswordMatchException(){
-        super("Passwords do not match");
     }
-}
-class InvalidSecurityCodeException extends java.lang.Exception{
-    public InvalidSecurityCodeException() {
+    class PasswordMatchException extends java.lang.Exception{ public PasswordMatchException(){
+        super("Passwords do not match");
+        }
+    }
+    class InvalidSecurityCodeException extends java.lang.Exception{
+        public InvalidSecurityCodeException() {
         super("Invalid security code");
     }
-}
+    }
 
