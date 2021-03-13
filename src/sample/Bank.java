@@ -14,6 +14,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import java.sql.*;
+import org.apache.commons.codec.digest.DigestUtils;
 
 
 public class Bank {
@@ -85,8 +86,8 @@ public class Bank {
         Button btLogin = new Button("Login");
         btLogin.setOnAction(actionEvent -> {
 
-            String username = tfUsername.getText();
-            String password = tfPassword.getText();
+            String username = DigestUtils.sha256Hex(tfUsername.getText());
+            String password = DigestUtils.sha256Hex(tfPassword.getText());
 
             try {
                 login(username, password);
@@ -161,9 +162,10 @@ public class Bank {
         Button btSignUp = new Button("Sign up");
         pane.add(btSignUp, 0, 9);
         btSignUp.setOnAction(actionEvent -> {
-            String username = tfUsername.getText();
-            String password = tfPassword.getText();
-            String password1 = tfPassWordC.getText();
+            // Hash the data
+            String username =  DigestUtils.sha256Hex(tfUsername.getText());
+            String password = DigestUtils.sha256Hex(tfPassword.getText());
+            String password1 = DigestUtils.sha256Hex(tfPassWordC.getText());
             if (!(password.equals(password1)))
                 pane.add(new Text("The password is not the same in the fields"), 0, 8);
             else
@@ -449,8 +451,8 @@ public class Bank {
         btResetPassword.setOnAction(actionEvent -> {
             message.setText("");
             passwordMsg.setText("");
-            String password = pfPassword.getText();
-            String password1 = pfPassword1.getText();
+            String password = DigestUtils.sha256Hex(pfPassword.getText());
+            String password1 = DigestUtils.sha256Hex(pfPassword1.getText());
 
             if (!(password.equals(password1)))
                 passwordMsg.setText("Passwords are not the same");
@@ -458,8 +460,7 @@ public class Bank {
                try{
                   Class.forName("com.mysql.cj.jdbc.Driver");
                   Connection con = DriverManager.getConnection(
-                          "jdbc:mysql://localhost:3306/bank", USER, PASSWORD
-                  );
+                          "jdbc:mysql://localhost:3306/bank", USER, PASSWORD);
                   Statement statement = con.createStatement();
                   int index = statement.executeUpdate("update account set password = '" + password + "' where username = '" + username +
                           "' and password = '" + passwordOld + "';");
@@ -501,8 +502,8 @@ public class Bank {
            Connection con = DriverManager.getConnection(
                    "jdbc:mysql://localhost:3306/bank", USER, PASSWORD);
            Statement statement = con.createStatement();
-           ResultSet rs = statement.executeQuery("select security_code from account where username = '" + username +
-                   "' and password = '" + password +"';");
+           ResultSet rs = statement.executeQuery("SELECT security_code FROM account WHERE username = '" + username +
+                   "' AND password = '" + password +"';");
            if(rs.next())
                securityCode.setText(rs.getString(1));
 
@@ -574,7 +575,7 @@ public class Bank {
                 // Connect to the database
                 try {
                     // Get the username from the text
-                    String username = tfUsername.getText();
+                    String username = DigestUtils.sha256Hex(tfUsername.getText());
 
                     // Check if one or more fields are empty
                     if (username.isEmpty() || pfPassword.getText().isEmpty() || pfPassword1.getText().isEmpty() ||
@@ -599,7 +600,7 @@ public class Bank {
                     if (!security_code.equals(tfSecurityCode.getText())) throw new InvalidSecurityCodeException();
 
                     // Execute the query to change password
-                    int changePassRs = statement.executeUpdate("update account set password = '" + pfPassword.getText() +
+                    int changePassRs = statement.executeUpdate("update account set password = '" + DigestUtils.sha256Hex(pfPassword.getText()) +
                             "' where username = '" + username + "' and security_code= '" + security_code + "';");
 
                     // Show a message that confirms if the password what changed with no errors
